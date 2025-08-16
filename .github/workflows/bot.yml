@@ -2,7 +2,7 @@ name: sip bot
 
 on:
   schedule:
-    - cron: '*/1 * * * *'  # Run every minute
+    - cron: '*/40 * * * *'
   workflow_dispatch:  # Allow manual trigger
 
 jobs:
