@@ -19,6 +19,7 @@ page_to_scrape = webdriver.Chrome(service=browser_driver, options=chrome_options
 try:
     # Step 1: Navigate to the page
     page_to_scrape.get("https://sip.elfak.ni.ac.rs/")
+    time.sleep(3)
 
     responseT = page_to_scrape.find_element(By.ID, 'novosti')
     novosti_markdown = responseT.text
