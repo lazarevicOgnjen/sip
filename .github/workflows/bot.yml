@@ -52,6 +52,7 @@ jobs:
         uses: lazarevicOgnjen/git-auto-commit-action@v6
         with:
           commit_message: Update novosti.md
+          file_pattern: novosti.md
         id: auto-commit-action
 
       # Step 8: Take screenshot if changes detected
