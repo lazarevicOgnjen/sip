@@ -1,33 +1,39 @@
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
-import time
+import requests
+from bs4 import BeautifulSoup
+from html2image import Html2Image
 
-# Chrome options
-chrome_options = Options()
-chrome_options.add_argument("--headless")
-chrome_options.add_argument("--no-sandbox")
-chrome_options.add_argument("--disable-dev-shm-usage")
-chrome_options.binary_location = "/usr/bin/google-chrome"
+# URL to scrape
+url = "https://sip.elfak.ni.ac.rs/"
 
-# Chrome driver setup
-browser_driver = Service('/usr/bin/chromedriver')
+# Send GET request
+response = requests.get(url)
+response.raise_for_status()  # Raise error if request fails
 
-# Start the browser
-page_to_scrape = webdriver.Chrome(service=browser_driver, options=chrome_options)
+# Parse HTML
+soup = BeautifulSoup(response.text, "html.parser")
 
-try:
-    # Step 1: Navigate to the page
-    page_to_scrape.get("https://sip.elfak.ni.ac.rs/")
-    time.sleep(3)
+# Find the element with ID 'novosti'
+novosti_element = soup.find(id="novosti")
+novosti_text = novosti_element.get_text(strip=True) if novosti_element else "No content found."
 
-    responseT = page_to_scrape.find_element(By.ID, 'novosti')
-    novosti_markdown = responseT.text
+# Save text to Markdown file
+with open("novosti.md", "w") as novosti_file:
+    novosti_file.write(novosti_text)
 
-    with open("novosti.md", "w") as novosti_file:
-        novosti_file.write(novosti_markdown)
+# Save screenshot of the element
+hti = Html2Image(output_path='.', size=(800, 600))  # Width x Height
+html_content = f"""
+<html>
+<head>
+  <style>
+    body {{ font-family: Arial, sans-serif; background: white; padding: 20px; }}
+    #novosti {{ border: 1px solid #ddd; padding: 10px; }}
+  </style>
+</head>
+<body>
+  <div id="novosti">{novosti_element}</div>
+</body>
+</html>
+"""
+hti.screenshot(html_str=html_content, save_as='sip-nova-obavestenja.png')
 
-finally:
-    # Close the browser
-    page_to_scrape.quit()
