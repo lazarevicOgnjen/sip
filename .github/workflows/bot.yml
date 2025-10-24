@@ -20,22 +20,18 @@ jobs:
         with:
           python-version: '3.9'
 
-      # Step 3: Install system dependencies
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-
-      # Step 4: Install Python dependencies
+      # Step 3: Install Python dependencies
       - name: Install Python packages
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          python -m playwright install chromium  # Instalacija browsera za Playwright
 
-      # Step 5: Run scraping script
+      # Step 4: Run scraping script
       - name: Run main script
         run: python main.py
 
-      # Step 6: Commit changes to novosti.md
+      # Step 5: Commit changes to novosti.md
       - name: Commit changes
         uses: lazarevicOgnjen/git-auto-commit-action@v6
         with:
@@ -43,7 +39,7 @@ jobs:
           file_pattern: novosti.md
         id: auto-commit-action
 
-      # Step 8: Notify via Discord bot
+      # Step 6: Notify via Discord bot
       - name: Discord bot notification
         if: steps.auto-commit-action.outputs.changes_detected == 'true'
         env:
