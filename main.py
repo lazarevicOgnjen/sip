@@ -1,57 +1,48 @@
-from playwright.sync_api import sync_playwright
-from PIL import Image
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
+import time
 
-# URL za scraping
-url = "https://sip.elfak.ni.ac.rs/"
+# Chrome options
+chrome_options = Options()
+chrome_options.add_argument("--headless")
+chrome_options.add_argument("--no-sandbox")
+chrome_options.add_argument("--disable-dev-shm-usage")
+chrome_options.binary_location = "/usr/bin/google-chrome"
 
-# Željena širina i visina finalne slike (možeš menjati)
-final_width = 500
-final_height = 200
+# Chrome driver setup
+browser_driver = Service('/usr/bin/chromedriver')
 
-with sync_playwright() as p:
-    # Start Chromium headless
-    browser = p.chromium.launch(
-        headless=True,
-        args=["--no-sandbox", "--disable-dev-shm-usage"]
-    )
-    page = browser.new_page()
+# Start the browser
+page_to_scrape = webdriver.Chrome(service=browser_driver, options=chrome_options)
 
-    # Blokiraj nepotrebne resurse radi brzine
-    page.route("**/*", lambda route: route.abort() if route.request.resource_type in ["image", "font", "media"] else route.continue_())
+try:
+    # Step 1: Navigate to the page
+    page_to_scrape.get("https://sip.elfak.ni.ac.rs/")
+    time.sleep(3)
 
-    # Otvori stranicu
-    page.goto(url)
-    novosti_element = page.wait_for_selector("#novosti", timeout=10000)
+    responseT = page_to_scrape.find_element(By.ID, 'novosti')
+    novosti_markdown = responseT.text
 
-    if novosti_element:
-        # Snimi tekst u novosti.md
-        with open("novosti.md", "w", encoding="utf-8") as f:
-            f.write(novosti_element.inner_text())
+    with open("novosti.md", "w") as novosti_file:
+        novosti_file.write(novosti_markdown)
 
-        # Screenshot cele stranice
-        page.screenshot(path="full_page.png")
+    height = responseT.size['height']
+    width = responseT.size['width']
 
-        # Dobij bounding box elementa
-        box = novosti_element.bounding_box()
-        if box:
-            # Crop element iz full_page.png
-            im = Image.open("full_page.png")
-            crop_box = (
-                int(box["x"]),
-                int(box["y"]),
-                int(box["x"] + box["width"]),
-                int(box["y"] + box["height"])
-            )
-            im = im.crop(crop_box)
+    
+    desired_width = max(width, 1200)  
 
-            # Opcionalno resize na željene dimenzije
-            im = im.resize((final_width, final_height))
-            im.save("sip-nova-obavestenja.png")
+    desired_height = min(height, 1000)
 
-            print("Scraping complete: novosti.md and sip-nova-obavestenja.png updated.")
-        else:
-            print("Ne mogu da dobijem dimenzije elementa!")
-    else:
-        print("Element #novosti nije pronađen!")
+    page_to_scrape.set_window_size(desired_width, desired_height)  
 
-    browser.close()
+   
+    page_to_scrape.execute_script("arguments[0].scrollIntoView(true);", responseT)
+
+    responseT.screenshot('sip-nova-obavestenja.png')
+
+finally:
+    # Close the browser
+    page_to_scrape.quit()
