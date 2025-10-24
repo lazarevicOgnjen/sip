@@ -28,8 +28,8 @@ with sync_playwright() as p:
         box = novosti_element.bounding_box()
         if box:
             # Podesi viewport da element stane i kontrolisana širina/visina
-            viewport_width = max(int(box["width"]), 1200)
-            viewport_height = min(int(box["height"]), 1000)
+            viewport_width = max(int(box["width"]), 700)
+            viewport_height = min(int(box["height"]), 500)
             page.set_viewport_size({"width": viewport_width, "height": viewport_height})
 
             # Screenshot elementa bez clip
