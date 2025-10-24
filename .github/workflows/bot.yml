@@ -3,38 +3,60 @@ name: sip bot
 on:
   schedule:
     - cron: '*/30 * * * *'
-  workflow_dispatch:
+  workflow_dispatch:  # Allow manual trigger
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # Step 2: Setup Python environment
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
 
+      # Step 3: Install system dependencies
       - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libnss3
+
+      # Step 4: Verify installations
+      - name: Verify Chromium and Chromedriver installation
+        run: |
+          echo "Checking Chromium installation..."
+          google-chrome --version
+          which google-chrome
+
+          echo "Checking Chromedriver installation..."
+          chromedriver --version
+          which chromedriver
+
+      # Step 5: Install Python dependencies
+      - name: Install Python packages
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          python -m playwright install chromium
 
-      - name: Run scraping
+      # Step 6: Run scraping script
+      - name: Run main script
         run: python main.py
 
-      - name: Commit changes if any
+      # Step 7: Commit changes to novosti.md
+      - name: Commit changes
         uses: lazarevicOgnjen/git-auto-commit-action@v6
         with:
           commit_message: Update novosti.md
           file_pattern: novosti.md
         id: auto-commit-action
 
-      - name: Notify Discord
+      # Step 8: Notify via Discord bot
+      - name: Discord bot notification
         if: steps.auto-commit-action.outputs.changes_detected == 'true'
         env:
           WEBHOOK_MAIN: ${{ secrets.WEBHOOK_MAIN }}
