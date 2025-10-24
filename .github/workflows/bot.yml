@@ -43,11 +43,6 @@ jobs:
           file_pattern: novosti.md
         id: auto-commit-action
 
-      # Step 7: Take screenshot if changes detected
-      - name: Take photo
-        if: steps.auto-commit-action.outputs.changes_detected == 'true'
-        run: python photo.py
-
       # Step 8: Notify via Discord bot
       - name: Discord bot notification
         if: steps.auto-commit-action.outputs.changes_detected == 'true'
