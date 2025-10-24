@@ -1,4 +1,2 @@
 dhooks
-requests
-beautifulsoup4
-html2image
+playwright
