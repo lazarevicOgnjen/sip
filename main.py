@@ -41,7 +41,7 @@ try:
    
     page_to_scrape.execute_script("arguments[0].scrollIntoView(true);", responseT)
 
-    responseT.screenshot('sip-nova-obavestenja.png')
+    responseT.screenshot('sip.png')
 
 finally:
     # Close the browser
